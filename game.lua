@@ -22,6 +22,10 @@ end
 
 function game.setState(state)
 
+    if state == "map" then
+        screen.setState("map")
+    end
+
     if state == "logo" then
         screen.setState("logo")
         sound.logo:seek(0)

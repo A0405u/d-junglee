@@ -1,8 +1,8 @@
 cycle = {}
 
 function cycle.load()
-    cycle.day = 32
-    cycle.night = 16
+    cycle.day = 1
+    cycle.night = 32
     cycle.time = 0
     cycle.state = "day"
     cycle.len = cycle.day

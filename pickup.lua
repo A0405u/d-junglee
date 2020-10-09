@@ -1,7 +1,7 @@
 local pickup = {}
 
 
-function pickup:create(x, y, sx, sy, d, n, t)
+function pickup:new(x, y, sx, sy, d, n, t)
 
     self.__index = self
 

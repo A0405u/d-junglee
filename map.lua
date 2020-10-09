@@ -71,3 +71,26 @@ end
 --         love.graphics.draw(map.grid)
 --     end
 -- end
+
+function map.get(posx, posy)
+	r, g, b, a = map.mask:getPixel(posx, posy)
+
+	if r > 0 and g == 0 and b == 0 then
+		return "wall"
+
+	elseif r > 0 and g > 0 and b == 0 then
+		return "door"
+
+	elseif r == 0 and g > 0 and b > 0 then
+		return "building"
+
+	elseif r == 0 and g > 0 and b == 0 then
+		return "forest"
+	
+	elseif r == 0 and g == 0 and b > 0 then
+		return "water"
+
+	else
+		return "ground"
+	end
+end

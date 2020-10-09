@@ -31,7 +31,7 @@ function screen.load()
         text = "Return to lab at sector F5"
     }
 
-    screen.state = "intro"
+    screen.state = game.state
     screen.time = time
 
     screen.key = 0
@@ -152,7 +152,9 @@ function screen.drawmap()
     map.draw()
     clock.draw()
     player.draw()
-    enemy.draw()
+    for i = 0, #monsters do
+        monsters[i]:draw(dt)
+    end
     for i = 0, #pickups do
         pickups[i]:draw(dt)
     end

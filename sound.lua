@@ -9,8 +9,8 @@ function sound.load()
     sound.player.step.building = love.audio.newSource("Sounds/playerstepbuilding.wav", "static")
     sound.player.step.water = love.audio.newSource("Sounds/playerstepwater.wav", "static")
 
-    sound.enemy = {}
-    sound.enemy.step = love.audio.newSource("Sounds/enemystep.wav", "static")
+    sound.monster = {}
+    sound.monster.step = love.audio.newSource("Sounds/enemystep.wav", "static")
 
     sound.pickup = love.audio.newSource("Sounds/pickup.wav", "static")
 
@@ -36,4 +36,10 @@ function sound.load()
 
     sound.night = love.audio.newSource("Sounds/night.wav", "static")
     sound.night:setLooping(true)
+end
+
+function sound.play(sound)
+	sound:stop()
+	sound:seek(0)
+	sound:play()
 end

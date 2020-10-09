@@ -1,5 +1,6 @@
--- Class = require "class"
+-- local Class = require "class"
 local pickup = require 'pickup'
+local monster = require 'monster'
 
 require "game"
 require "screen"
@@ -7,10 +8,11 @@ require "sound"
 require "cycle"
 require "clock"
 require "player"
+require "map"
+
 -- require "sight"
 -- require "pickup"
-require "enemy"
-require "map"
+-- require "enemy"
 
 MAPNAME = "DarkrootIsland";
 
@@ -108,19 +110,26 @@ function love.load()
     fontsmall = love.graphics.newFont("Fonts/EverexME.ttf", 8)
 
     player.load()
-    enemy.load()
---    pickup.load()
     map.load(MAPNAME)
 
     pickups = {
-        [0] = pickup:create(94, 97, 4, 4, true, "Laboratory 9", "As you neared the laboratory, it was suspiciously quiet around. Once inside, you see documents and equipment scattered all over the place.\n\nLooks like nobody's here. Try to find out what happened."),
-        [1] = pickup:create(95, 93, 3, 3, false, "Habitat LC9", "You've come across barracs you lived in with other service stuff.\n\nIt's a mess here. All your things are gone.\n\nGood that you picked up a gun yesterday."),
-        [2] = pickup:create(106, 92, 3, 3, false, "Habitat LS9", "You have never get inside other structures, even in this close ones.\n\nStill a mess. Scattered belongings of scientists everywhere. They worked in your laboratory."),
-        [3] = pickup:create(89, 26, 3, 4, false, "Secret Lab X", "You are going down the stairs, entering the bunker. After opening meter thick doors, coming inside. You notice a person sitting in front of the monitor."),
-        [4] = pickup:create(91, 25, 3, 3, false, "", ""),
+        [0] = pickup:new(94, 97, 4, 4, true, "Laboratory 9", "As you neared the laboratory, it was suspiciously quiet around. Once inside, you see documents and equipment scattered all over the place.\n\nLooks like nobody's here. Try to find out what happened."),
+        [1] = pickup:new(95, 93, 3, 3, false, "Habitat LC9", "You've come across barracs you lived in with other service stuff.\n\nIt's a mess here. All your things are gone.\n\nGood that you picked up a gun yesterday."),
+        [2] = pickup:new(106, 92, 3, 3, false, "Habitat LS9", "You have never get inside other structures, even in this close ones.\n\nStill a mess. Scattered belongings of scientists everywhere. They worked in your laboratory."),
+        [3] = pickup:new(89, 26, 3, 4, false, "Secret Lab X", "You are going down the stairs, entering the bunker. After opening meter thick doors, coming inside. You notice a person sitting in front of the monitor."),
+        [4] = pickup:new(91, 25, 3, 3, false, "", ""),
         --[] = pickup:create(),
     }
+
+    monsters = {
+        [0] = monster:new(40, 48, 1, 10),
+        [1] = monster:new(116, 48, 1, 10),
+    }
+    print(monsters[0])
+    -- enemy.load()
+    -- pickup.load()
     -- sight.load()
+    game.setState("map")
 end
 
 
@@ -144,7 +153,9 @@ function love.update(dt)
 
     if screen.state == "map" then
         player.update(dt)
-        enemy.update(dt)
+        for i = 0, #monsters do
+            monsters[i]:update(dt)
+        end
         for i = 0, #pickups do
             pickups[i]:update(dt)
         end

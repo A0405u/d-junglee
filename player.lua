@@ -1,6 +1,3 @@
-PLAYER_SIZE = 2
-PLAYER_SPEED = 4
-
 MIN_POS = 1
 MAX_POS = 126
 
@@ -15,16 +12,15 @@ function player.load()
 	player.velx = 0
 	player.vely = 0
 
-	player.dirx = 1
-	player.diry = 0
-
-	player.size = PLAYER_SIZE
-	player.speed = PLAYER_SPEED
+	player.speed = 4
+	player.smult = 1
 
 	player.sprite = love.graphics.newImage("Sprites/Player.png")
 	player.portrait = love.graphics.newImage("Sprites/portrait.png")
 
-	player.moving = false
+	player.movx = false
+	player.movy = false
+
 	player.nextstep = 0
 
 	player.sound = {
@@ -36,7 +32,7 @@ end
 -- Update
 function player.update(dt)
 	player.physics(dt)
-	if player.moving then
+	if player.movx or player.movy then
 		player.move(dt)
 	end
 end
@@ -55,7 +51,7 @@ function player.draw()
 end
 
 
--- Обработка управления
+-- Обработка нажатия клавиш
 function player.keypressed(pressed_key)
 
 	if pressed_key == 'w' or pressed_key == "up" then
@@ -80,7 +76,7 @@ function player.keypressed(pressed_key)
 end
 
 
--- Предотвращение выхода за границы
+-- Предотвращение выхода за границы, возвращает true в случае если дальнейшее движение возможно
 function player.checkborder()
 
 	border = false
@@ -101,52 +97,51 @@ function player.checkborder()
 		border = true
 	end
 
-	return border
+	return not border
 end
 
 
+-- Проверка на достижимость клетки, возвращает true если возможно дальнейшее движение
 function player.checkwall()
 	--Случай когда движимся наискось
 	if player.velx ~= 0 and player.vely ~= 0 then
 		-- Если клетка наискось достижима
-		if player.detect(player.posx + player.velx, player.posy + player.vely) ~= "unreachable" then
-			return
+		if player.check(player.posx + player.velx, player.posy + player.vely) ~= "unreachable" then
+			return true
 		end
 		-- Иначе смотрим клетку по х
-		if player.detect(player.posx + player.velx, player.posy) ~= "unreachable" then
+		if player.check(player.posx + player.velx, player.posy) ~= "unreachable" then
 			player.vely = 0
-			return
+			return true
 		end
 		-- Иначе смотрим клетку по y
-		if player.detect(player.posx, player.posy + player.vely) ~= "unreachable" then
+		if player.check(player.posx, player.posy + player.vely) ~= "unreachable" then
 			player.velx = 0
-			return
+			return true
 		end
 		-- Иначе никуда не идем
 		player.velx = 0
 		player.vely = 0
-		return
+		return false
 	end
 	--Случай когда мы движимся вертикально или горизонтально
-	if player.detect(player.posx + player.velx, player.posy + player.vely) == "unreachable" then
+	if player.check(player.posx + player.velx, player.posy + player.vely) == "unreachable" then
 		player.velx = 0
 		player.vely = 0
-		return
+		return false
 	end
-	return
+	return true
 end
-			
 
 
-
--- Обновление вектора скорости
+-- Обновление вектора скорости и таймера, начало движения
 function player.setvel(dirx, diry)
 
 	player.velx = dirx
 	player.vely = diry
 
 	if time >= player.nextstep then
-		player.nextstep = time + 1 / player.speed
+		player.nextstep = time + 1 / (player.speed * player.smult)
 	end
 end
 
@@ -154,109 +149,117 @@ end
 -- Перемещение в пространстве
 function player.physics(dt)
 
-	if player.velx ~= 0 or player.vely ~= 0 then
+	if player.velx ~= 0 or player.vely ~= 0 then -- Первичная проверка скорости
 
-		if time >= player.nextstep then
+		if time >= player.nextstep then -- Пришло ли время переместиться на клетку
 
-			player.checkborder()
-			player.checkwall() -- Обнулит скорость если туда идти нельзя
+			if player.checkborder() and player.checkwall() then -- Возможно ли дальнейшее перемещение после проверки
 
-			if player.velx ~= 0 or player.vely ~= 0 then
-				player.sound.step:seek(0)
-				player.sound.step:play()
+				player.posx = player.posx + player.velx
+				player.posy = player.posy + player.vely
+
+				player.apply(player.check(player.posx, player.posy)) -- после перемещения на клетку применяем модификаторы поверхности
+
+				sound.play(player.sound.step)
+
+				if velx ~= 0 then
+					player.movx = true
+				end
+				if vely ~= 0 then
+					player.movy = true
+				end
+
+				player.velx = 0
+				player.vely = 0
 			end
-
-			player.posx = player.posx + player.velx -- отдельно x от y
-			player.posy = player.posy + player.vely -- независимое движение
-
-			player.moving = true
-
-			player.velx = 0
-			player.vely = 0
 		end
 	end
 end
 
--- Перемещение персонажа
+-- Обработка перемещения зажатой клавишей
 function player.move(dt)
 
-	if love.keyboard.isDown("d") or love.keyboard.isDown("right") then
-		player.setvel(1, player.vely)
+	if player.movy then
+		if love.keyboard.isDown("d") or love.keyboard.isDown("right") then
+			player.setvel(1, player.vely)
 
-	elseif love.keyboard.isDown("a") or love.keyboard.isDown("left") then
-		player.setvel(-1, player.vely)
-	
-	else
-		player.setvel(0, player.vely)
+		elseif love.keyboard.isDown("a") or love.keyboard.isDown("left") then
+			player.setvel(-1, player.vely)
+		
+		else
+			player.setvel(0, player.vely)
+			player.movy = false
+		end
 	end
 
-	if love.keyboard.isDown("s") or love.keyboard.isDown("down") then
-		player.setvel(player.velx, 1)
+	if player.movx then
+		if love.keyboard.isDown("s") or love.keyboard.isDown("down") then
+			player.setvel(player.velx, 1)
 
-	elseif love.keyboard.isDown("w") or love.keyboard.isDown("up") then
-		player.setvel(player.velx, -1)
+		elseif love.keyboard.isDown("w") or love.keyboard.isDown("up") then
+			player.setvel(player.velx, -1)
 
-	else
-		player.setvel(player.velx, 0)
-	end
-
-	if player.velx ~= 0 or player.vely ~= 0 then
-		player.dirx = player.velx
-		player.diry = player.vely
-	else
-		player.moving = false
+		else
+			player.setvel(player.velx, 0)
+			player.movx = false
+		end
 	end
 end
 
 
--- Обнаружение поверхности
-function player.detect(posx, posy)
-	r, g, b, a = map.mask:getPixel(posx, posy)
+-- Проверка поверхности, проверка достижимости
+function player.check(posx, posy)
+	local p = map.get(posx, posy)
+	if p == "wall" then
+		return "unreachable"
+	end
+	return p
+end
 
-	if r > 0 and g == 0 and b == 0 then
-		return player.wall()
 
-	elseif r > 0 and g > 0 and b == 0 then
-		return player.door()
+-- Применение свойств поверхности
+function player.apply(surface)
 
-	elseif r == 0 and g > 0 and b > 0 then
+	if surface == "building" then
 		return player.building()
+	end
 
-	elseif r == 0 and g > 0 and b == 0 then
+	if surface == "door" then
+		return player.door()
+	end
+
+	if surface == "forest" then
 		return player.forest()
-	
-	elseif r == 0 and g == 0 and b > 0 then
-		return player.water()
+	end
 
-	else
+	if surface == "ground" then
 		return player.ground()
 	end
-end
 
-
--- Отталкивание от стены
-function player.wall()
-	return "unreachable"
+	if surface == "water" then
+		return player.water()
+	end
 end
 
 
 -- Поведение в здании
 function player.building()
-	player.speed = PLAYER_SPEED / 2
+	player.smult = 0.5
 	player.sound.step = sound.player.step.building
 	return "building"
 end
 
 
 function player.door()
-	player.speed = PLAYER_SPEED / 2
+	player.smult = 0.5
+	player.sound.step = sound.player.step.building
 	return "door"
 end
 
 
 -- Поведение в лесу
 function player.forest()
-	player.speed = PLAYER_SPEED / 2
+	player.smult = 0.5
 	player.sound.step = sound.player.step.forest
 	return "forest"
 end
@@ -264,7 +267,7 @@ end
 
 -- Поведение на земле
 function player.ground()
-	player.speed = PLAYER_SPEED
+	player.smult = 1
 	player.sound.step = sound.player.step.ground
 	return "ground"
 end
@@ -272,7 +275,7 @@ end
 
 -- Поведение в воде
 function player.water()
-	player.speed = PLAYER_SPEED / 4
+	player.smult = 0.25
 	player.sound.step = sound.player.step.water
 	return "water"
 end
