@@ -9,6 +9,7 @@ require "cycle"
 require "clock"
 require "player"
 require "map"
+require "path"
 
 -- require "sight"
 -- require "pickup"
@@ -110,7 +111,9 @@ function love.load()
     fontsmall = love.graphics.newFont("Fonts/EverexME.ttf", 8)
 
     player.load()
+
     map.load(MAPNAME)
+    path.load()
 
     pickups = {
         [0] = pickup:new(94, 97, 4, 4, true, "Laboratory 9", "As you neared the laboratory, it was suspiciously quiet around. Once inside, you see documents and equipment scattered all over the place.\n\nLooks like nobody's here. Try to find out what happened."),
@@ -125,7 +128,6 @@ function love.load()
         [0] = monster:new(40, 48, 1, 10),
         [1] = monster:new(116, 48, 1, 10),
     }
-    print(monsters[0])
     -- enemy.load()
     -- pickup.load()
     -- sight.load()

@@ -16,6 +16,11 @@ function monster:new(x, y, sz, sp)
 
 		smult = 1, -- speed multiplier
 		timer = 0,
+
+		path = {
+			nodes = {},
+			delay = 0
+		},
     }, self)
 end
 
@@ -73,28 +78,49 @@ function monster:checkwall()
 end
 
 
+function monster:getpath()
+
+--	if time >= self.path.delay then
+	local path = path.get(self.posx, self.posy, player.posx, player.posy)
+
+	self.path.nodes = {}
+
+	if path then
+		for node, count in path:nodes() do
+			self.path.nodes[count] = {node:getPos()}
+		end
+		table.remove(self.path.nodes, 1)
+	end
+
+--		self.path.delay = time + 2
+--	end
+end
+
+
 function monster:follow()
 
-	if self.posx > player.posx then
-		self:setvel(-1, self.vely)
-	
-	elseif self.posx < player.posx then
-		self:setvel(1, self.vely)
+	if next(self.path.nodes) ~= nil then
 
-	else
-		self:setvel(0, self.vely)
-	end
+		local current = table.remove(self.path.nodes, 1)
 
-	if self.posy > player.posy then
-		self:setvel(self.velx, -1)
-	
-	elseif self.posy < player.posy then
-		self:setvel(self.velx, 1)
+		if current[1] > self.posx then
+			self:setvel(1, self.vely)
+		elseif current[1] < self.posx then
+			self:setvel(-1, self.vely)
+		else
+			self:setvel(0, self.vely)
+		end
 
-	else
-		self:setvel(self.velx, 0)
+		if current[2] > self.posy then
+			self:setvel(self.velx, 1)
+		elseif	current[2] < self.posy then
+			self:setvel(self.velx, -1)
+		else
+			self:setvel(self.velx, 0)
+		end
 	end
 end
+
 
 
 function monster:physics(dt)
@@ -110,10 +136,11 @@ function monster:physics(dt)
 
 			self.velx = 0
 			self.vely = 0
+
+			self:getpath()
+			self:follow()
 		end
 	end
-	
-	self:follow()
 end
 
 

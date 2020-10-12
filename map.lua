@@ -1,19 +1,15 @@
 map = {}
+map.nodes = {}
 
 function map.load(map_name)
-    love.graphics.setColor(1, 1, 1)
     map.sprite = {
         day = love.graphics.newImage("Sprites/"..map_name.."Day.png"),
         night = love.graphics.newImage("Sprites/"..map_name.."Night.png"),
-        -- [0] = love.graphics.newImage("Sprites/"..map_name.."000.png"),
-        -- [1] = love.graphics.newImage("Sprites/"..map_name.."001.png"),
-        -- [2] = love.graphics.newImage("Sprites/"..map_name.."002.png"),
-        -- [3] = love.graphics.newImage("Sprites/"..map_name.."003.png")
     }
-    -- map.frame = love.graphics.newImage("Sprites/"..map_name.."Frame.png")
-    -- map.grid = love.graphics.newImage("Sprites/"..map_name.."Grid.png")
     map.mask = love.image.newImageData("Sprites/"..map_name.."Mask.png")
---    map.gradient = love.image.newImageData("Sprites/"..map_name.."Gradient.png")
+    map.x = 127
+    map.y = 127
+    map.loadnodes()
 end
 
 function map.draw()
@@ -72,8 +68,8 @@ end
 --     end
 -- end
 
-function map.get(posx, posy)
-	r, g, b, a = map.mask:getPixel(posx, posy)
+function map.get(x, y)
+	r, g, b, a = map.mask:getPixel(x, y)
 
 	if r > 0 and g == 0 and b == 0 then
 		return "wall"
@@ -93,4 +89,78 @@ function map.get(posx, posy)
 	else
 		return "ground"
 	end
+end
+
+
+-- Создать массив ячеек
+function map.loadnodes()
+
+    local surface
+
+    for y = 0, map.y do
+        for x = 0, map.x do
+            table.insert(map.nodes, {x = x, y = y})
+        end
+    end
+end
+
+
+-- Получить ссылку на ячейку
+function map.getnode(x, y)
+
+    for i, node in map.nodes do
+        if node.x == x and node.y == y then
+            return node
+        end
+    end
+end
+
+
+-- Принадлежит ли клетка с координатами x, y сетке
+function map.inbounds(x, y)
+
+    if x < 0 or x > map.x then
+        return false
+    end
+
+    if y < 0 or y > map.y then
+        return false
+    end
+
+    return true
+end
+
+
+-- Проверка клетки с координатами x, y на пригодность для прохода
+function map.reachable(x, y)
+
+    local surface = map.get(x, y)
+    
+	if surface == "wall" or surface == "building" or surface == "door" or surface == "water" then
+		return false
+    end
+    
+	return true
+end
+
+
+-- Сетка проходимых и непроходимых клеток
+function map.getgrid()
+
+    local grid = {}
+
+    for y = 0, map.y do
+
+        grid[y] = {}
+
+        for x = 0, map.x do
+
+            if map.reachable(x, y) then
+                grid[y][x] = 0
+            else
+                grid[y][x] = 1
+            end
+        end
+    end
+    return grid
 end
