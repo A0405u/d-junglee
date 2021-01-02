@@ -1,12 +1,15 @@
 local monster = {}
 
-function monster:new(x, y, sz, sp)
+function monster:new(x, y, sz, sp, rt, cl)
 
     self.__index = self
 
     return setmetatable({
         posx = x,
 		posy = y,
+
+		initx = x,
+		inity = y,
 		
 		velx = 0,
 		vely = 0,
@@ -14,8 +17,14 @@ function monster:new(x, y, sz, sp)
         size = sz,
 		speed = sp,
 
+		turncount = 0,
+		delay = 0,
+
+		returning = rt,
+
+		color = cl or {1, 0, 0},
+
 		smult = 1, -- speed multiplier
-		timer = 0,
 
 		path = {
 			nodes = {},
@@ -25,10 +34,21 @@ function monster:new(x, y, sz, sp)
 end
 
 function monster:update(dt)
-	if cycle.state == "night" then
-		self:physics(dt)
+
+	if cycle.state == "day" then
+		return
 	end
-	self:checkcollision(dt)
+
+	self.delay = self.delay - dt
+
+	if self.turncount > 0 then
+
+		if self.delay <= 0 then
+
+			self:turn()
+			self.delay = turn.delay / self.speed
+		end
+	end
 end
 
 
@@ -36,14 +56,36 @@ function monster:draw()
 
 	if cycle.state == "night" then
 		if time % 0.5 > 0.25 then
-			love.graphics.setColor(97/255, 0, 0)
+			love.graphics.setColor(color.black)
 		else
-			love.graphics.setColor(1, 0, 0)
+			love.graphics.setColor(self.color)
 		end
 		love.graphics.points(self.posx + 0.5, self.posy + 0.5)
+
+--		self:drawpath()
 	end
 end
 
+
+
+function monster:addturn()
+
+	if cycle.state == "day" then
+		return
+	end
+
+	self.turncount = self.turncount + self.speed
+end
+
+
+
+function monster:turn()
+
+	self.turncount = self.turncount - 1
+
+	self:physics()
+	self:checkcollision()
+end
 
 -- Проверка на достижимость клетки, возвращает true если возможно дальнейшее движение
 function monster:checkwall()
@@ -80,20 +122,35 @@ end
 
 function monster:getpath()
 
---	if time >= self.path.delay then
-	local path = path.get(self.posx, self.posy, player.posx, player.posy)
+	local temp = path.get(self.posx, self.posy, player.posx, player.posy) -- Поиск пути к игроку
+
+	if self.returning and not temp then -- Если пути к игроку нет, уходим на начальную позицию
+		temp = path.get(self.posx, self.posy, self.initx, self.inity)  -- Поиск пути к начальной позиции
+	end
+
+	if not temp then return end -- Если и пути назад не нашлось, ничего не делаем
 
 	self.path.nodes = {}
 
-	if path then
-		for node, count in path:nodes() do
-			self.path.nodes[count] = {node:getPos()}
-		end
-		table.remove(self.path.nodes, 1)
+	for node, count in temp:nodes() do
+		self.path.nodes[count] = {node:getPos()}
 	end
 
---		self.path.delay = time + 2
---	end
+	table.remove(self.path.nodes, 1)
+
+end
+
+
+
+function monster:drawpath()
+
+	if next(self.path.nodes) ~= nil then
+
+		love.graphics.setColor(1, 0, 0)
+		for i = 1, #self.path.nodes do
+			love.graphics.points(self.path.nodes[i][1] + 0.5, self.path.nodes[i][2] + 0.5)
+		end
+	end
 end
 
 
@@ -123,11 +180,11 @@ end
 
 
 
-function monster:physics(dt)
+function monster:physics()
 
-	if time >= self.timer then
+	if self:checkwall() then
 
-		if self:checkwall() then
+		if self.velx ~= 0 or self.vely ~= 0 then
 
 			self.posx = self.posx + self.velx -- отдельно x от y
 			self.posy = self.posy + self.vely -- независимое движение
@@ -136,10 +193,10 @@ function monster:physics(dt)
 
 			self.velx = 0
 			self.vely = 0
-
-			self:getpath()
-			self:follow()
 		end
+		
+		self:getpath()
+		self:follow()
 	end
 end
 
@@ -148,10 +205,6 @@ function monster:setvel(dirx, diry)
 
 	self.velx = dirx
 	self.vely = diry
-
-	if time >= self.timer then
-		self.timer = time + 1 / (self.speed * self.smult)
-	end
 end
 
 
@@ -164,34 +217,20 @@ function monster:check(posx, posy)
 end
 
 
-function monster:apply(surface)
-
-	if surface == "forest" then
-		return self:forest()
-	end
-
-	if surface == "ground" then
-		return self:ground()
-	end
-end
-
-
 -- Поведение в лесу
 function monster:forest()
-	self.smult = 0.5 
 	return "forest"
 end
 
 
 -- Поведение на земле
 function monster:ground()
-	self.smult = 1
 	return "ground"
 end
 
 
 -- Убийство игрока в случае сопрокосновения
-function monster:checkcollision(dt)
+function monster:checkcollision()
 
 	if player.posx == self.posx and player.posy == self.posy then
 		player.death()

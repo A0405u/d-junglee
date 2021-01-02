@@ -3,10 +3,10 @@ map.nodes = {}
 
 function map.load(map_name)
     map.sprite = {
-        day = love.graphics.newImage("Sprites/"..map_name.."Day.png"),
-        night = love.graphics.newImage("Sprites/"..map_name.."Night.png"),
+        day = love.graphics.newImage("sprites/"..map_name.."Day.png"),
+        night = love.graphics.newImage("sprites/"..map_name.."Night.png"),
     }
-    map.mask = love.image.newImageData("Sprites/"..map_name.."Mask.png")
+    map.mask = love.image.newImageData("sprites/"..map_name.."Mask.png")
     map.x = 127
     map.y = 127
     map.loadnodes()
@@ -69,6 +69,11 @@ end
 -- end
 
 function map.get(x, y)
+
+    if x < 1 or x > map.x or y < 1 or y > map.y then -- выход за границы карты
+        return nil
+    end
+
 	r, g, b, a = map.mask:getPixel(x, y)
 
 	if r > 0 and g == 0 and b == 0 then

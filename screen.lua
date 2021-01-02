@@ -18,18 +18,30 @@ function screen.load()
 
     screen.canvas = love.graphics.newCanvas(SCREENSIZEX, SCREENSIZEY)
 
-    screen.logo = love.graphics.newImage("Sprites/logo.png")
-    screen.title = love.graphics.newImage("Sprites/title.png")
-    screen.file = love.graphics.newImage("Sprites/file.png")
+    screen.sprites = {}
 
-    screen.blood = love.graphics.newImage("Sprites/blood.png")
-    screen.blooddot = love.graphics.newImage("Sprites/blooddot.png")
+    screen.sprites.logo = love.graphics.newImage("sprites/logo.png")
+    screen.sprites.title = love.graphics.newImage("sprites/title.png")
+    screen.sprites.file = love.graphics.newImage("sprites/file.png")
+
+    screen.sprites.blood = love.graphics.newImage("sprites/blood.png")
+    screen.sprites.blooddot = love.graphics.newImage("sprites/blooddot.png")
+    screen.sprites.noise = love.graphics.newImage("sprites/noise.png")
+    screen.sprites.ghost = love.graphics.newImage("sprites/ghost.png")
+    screen.sprites.off = {
+        [0] = love.graphics.newImage("sprites/off000.png"),
+        [1] = love.graphics.newImage("sprites/off001.png")
+    }
+
     screen.tip = {
         show = true,
         help = true,
-        helpsprite = love.graphics.newImage("Sprites/tiphelp.png"),
-        text = "Return to lab at sector F5"
+        helpsprite = love.graphics.newImage("sprites/tiphelp.png"),
+        text = "Вернитесь в лабо-\nраторию, сектор F5"
     }
+
+    screen.header = "Рассвет"
+    screen.text = "Вы проснулись в открытой пещере. Невдалеке виднеется песчаный пляж и слышно гул чаек.\n\nВы набрели на эту пещеру ещё вчера, и уснули здесь наблюдая за прекрасным видом.\n\nПора возвращаться обратно."
 
     screen.state = game.state
     screen.time = time
@@ -39,34 +51,12 @@ end
 
 function screen.draw()
 
-    if screen.time <= 0.1 then
-        return
-    end
+    -- ПЕРЕХОД МЕЖДУ ЭКРАНАМИ В ВИДЕ ЧЕРНОГО КАДРА
+    -- if screen.time <= 0.1 then
+    --     return
+    -- end
 
-    if screen.state == "logo" then
-        screen.drawlogo()
-
-    elseif screen.state == "intro" then
-        screen.drawintro()
-
-    elseif screen.state == "title" then
-        screen.drawtitle()
-
-    elseif screen.state == "file" then
-        screen.drawfile()
-
-    elseif screen.state == "map" then
-        screen.drawmap()
-
-    elseif screen.state == "info" then
-        screen.drawinfo()
-
-    elseif screen.state == "death" then
-        screen.drawdeath()
-
-    elseif screen.state == "end" then
-        screen.drawend()
-    end
+    screen[screen.state]() -- Запуск функции соответствующей состоянию экрана
 end
 
 
@@ -75,75 +65,79 @@ function screen.update(dt)
     screen.time = screen.time + dt
 
     if screen.state == "intro" and screen.time > 8 then
-        game.setState("logo")
+        game.logo()
     end
 
     if screen.state == "logo" and screen.time > 3 then
-        game.setState("title")
+        game.title()
     end
 end
 
 
--- Logo
-function screen.drawlogo()
-    love.graphics.draw(screen.logo)
+function screen.font()
+
+    love.graphics.setColor(hsv(screen.time % 2 * 127.5, 255, 255))
+    love.graphics.setFont(font.monobold)
+--    color.reset()
+    love.graphics.printf("!\"#$%&`()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_'abcdefghijklmnopqrstuvwxyz{|}АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя█▒~", 0, 0, 128)
 end
 
 
 -- Intro
-function screen.drawintro()
+function screen.intro()
+
+    color.reset()
+    love.graphics.printf({{1, 0, 0}, "ВНИМАНИЕ!"}, 8, 12, 112, "center")
 
     s = {
-        {1, 0, 0},
-        "  ATTENTION!\n\n",
-        {231/255, 251/255, 214/255},
-        "Do not expect anything beautiful.\n\nYour monitor not able to display even 50% of real colors."
+        rgba(244, 244, 244, 1),
+        "Не ожидайте прекрасного.\n\nВаш монитор\nне способен отобразить даже половины цветов нашего мира."
     }
+    love.graphics.printf(s, 12, 28, 112, "left")
 
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.printf(s, 12, 12, 112, "left")
     love.graphics.printf({{255/255, 171/255, 0/255}, "@a0405u"}, 8, 108, 112, "right")
 
     -- love.graphics.setColor(49/255, 105/255, 82/255)
     -- love.graphics.setLineWidth(2)
     -- love.graphics.rectangle("line", 1, 1, 126, 126)
-    -- love.graphics.setColor(1, 1, 1)
+    -- color.reset()
 end
 
--- Title
-function screen.drawtitle()
 
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.draw(screen.title)
+-- Logo
+function screen.logo()
+
+    love.graphics.draw(screen.sprites.logo)
+end
+
+
+-- Title
+function screen.title()
+
+    color.reset()
+    love.graphics.draw(screen.sprites.title)
     if screen.time % 2 > 1 then
-        love.graphics.setColor(231/255, 251/255, 214/255)
-        love.graphics.printf("Press START", 0, 89, 128, "center")
+        love.graphics.setColor(color.white)
+        love.graphics.printf("Нажми START", 0, 89, 128, "center")
     end
 end
 
 
 function screen.drawtip()
 
-    love.graphics.setColor(1, 1, 1)
-    if cycle.state == "day" then
-        love.graphics.setColor(0, 62/255, 97/255)
-    else
-        love.graphics.setColor(8/255, 24/255, 33/255)
-    end
+    love.graphics.setColor(color.black)
     love.graphics.rectangle("fill", 23, 39, 81, 33)
 
-    love.graphics.setColor(1, 1, 1)
+    color.reset()
     if screen.tip.help == true then
-        love.graphics.draw(screen.tip.helpsprite)
+        --love.graphics.draw(screen.tip.helpsprite)
+        love.graphics.printf({color.light, "Скрыть - TAB"}, font.small, 26, 62, 75, "center")
     end
-    love.graphics.setColor(231/255, 251/255, 214/255)
-    love.graphics.setFont(fontsmall)
-    love.graphics.printf(screen.tip.text, 26, 42, 75, "center")
-    love.graphics.setFont(font)
+    love.graphics.printf({color.white, screen.tip.text}, font.small, 26, 42, 75, "center")
 end
 
 -- Map
-function screen.drawmap()
+function screen.map()
 
     -- map.draw()
     -- map.drawgrid()
@@ -152,10 +146,10 @@ function screen.drawmap()
     map.draw()
     clock.draw()
     player.draw()
-    for i = 0, #monsters do
+    for i = 1, #monsters do
         monsters[i]:draw(dt)
     end
-    for i = 0, #pickups do
+    for i = 1, #pickups do
         pickups[i]:draw(dt)
     end
 
@@ -166,94 +160,121 @@ function screen.drawmap()
 end
 
 
-function screen.drawfile()
+function screen.file()
 
-    strtop = {
-        {231/255, 251/255, 214/255},
-        "Antony\nSpiritov\n\n",
-        {140/255, 195/255, 115/255},
-        "Janitor"
-    }
-
-    love.graphics.draw(screen.file)
+    love.graphics.draw(screen.sprites.file)
     love.graphics.draw(player.portrait, 8, 8)
-    love.graphics.printf(strtop, 48, 8, 72)
+    
+    love.graphics.printf({color.white, "Антон\nЛисицин"}, 48, 8, 72)
+    love.graphics.printf({color.light, "Уборщик"}, 48, 32, 72)
 
-    love.graphics.setFont(fontsmall)
-    love.graphics.setColor(231/255, 251/255, 214/255)
-    love.graphics.printf("19 April, 1976.", 8, 49, 112)
-    love.graphics.setColor(140/255, 195/255, 115/255)
-    love.graphics.printf("Private person. Honest,", 8, 59, 128)
-    love.graphics.printf("responsible worker.", 8, 69, 112)
-    love.graphics.printf("Discipline violation.", 8, 79, 112)
-    love.graphics.printf("Not married.", 8, 89, 112)
-    love.graphics.setColor(231/255, 251/255, 214/255)
-    love.graphics.printf("Security level:", 8, 99, 112)
-    love.graphics.setColor(140/255, 195/255, 115/255)
-    love.graphics.printf("- Omega-8", 8, 109, 112)
-    love.graphics.setFont(font)
+    love.graphics.setFont(font.small)
+    love.graphics.printf({color.white, "Дальнегорск. 19 Апреля, 1976. \n", color.light, "Необщительный, закрытый че-\nловек. Честный, ответственный работник. Замечено нарушение режима содержания.\n\n", color.white, "Уровень доступа:\n", color.light, "- Омега-8"}, 8, 49, 112)
+    love.graphics.setFont(font.default)
 end
 
 
 -- Info
-function screen.drawinfo()
+function screen.info()
 
-    love.graphics.setFont(font)
-    love.graphics.setColor(231/255, 251/255, 214/255)
-    love.graphics.printf(screen.header, 8, 12, 112, "left")
-    love.graphics.setFont(fontsmall)
-    love.graphics.printf(screen.text, 8, 28, 112, "left")
-    love.graphics.setFont(font)
+    if cycle.state == "day" then
+        love.graphics.clear(color.black)
+        love.graphics.setColor(color.white)
+    else
+        love.graphics.clear(color.black)
+        love.graphics.setColor(color.white)
+    end
+
+    love.graphics.printf(screen.header, font.default, 8, 8, 112, "left")
+
+    love.graphics.printf(screen.text, font.small, 8, 24, 112, "left")
+
+    choice.draw()
 end
+
+
+-- Terminal
+function screen.terminal()
+
+    terminal.draw()
+end
+
+
 
 -- Death
-function screen.drawdeath()
+function screen.death()
 
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.printf({{1, 0, 0}, "TRY AGAIN\n\n"}, 0, 60, 128, "center")
+    color.reset()
+    love.graphics.printf({{1, 0, 0}, "ПОПРОБУЙ ЕЩЁ\n\n"}, 0, 60, 128, "center")
 end
 
 
-function screen.drawend()
+function screen.ending()
 
-    screen.drawmap()
+    if screen.key < 4 then
+        screen.map()
+    else
+        love.graphics.draw(screen.sprites.ghost)
+        if screen.time <=1.45 then
+            love.graphics.draw(screen.sprites.off[0])
+        elseif screen.time <=1.6 then
+            love.graphics.draw(screen.sprites.off[1])
+        end
+    end
+
 
     if screen.key < 1 then
-        sound.shot:seek(0)
-        sound.shot:play()
+        sound.play(sound.shot)
         screen.key = 1
     end
 
+    if screen.time <= 0.1 and screen.key < 2 then
+        love.graphics.setColor(color.white)
+        love.graphics.draw(screen.sprites.noise)
+    end
+
     if screen.time >= 0.6 and screen.key < 2 then
-        sound.shot:seek(0)
-        sound.shot:play()
+        sound.play(sound.shot)
         screen.key = 2
     end
-        
+
+    if screen.time <= 0.7 and screen.key > 1 then
+        love.graphics.setColor(color.white)
+        love.graphics.draw(screen.sprites.noise)
+    end
+
     if screen.time >= 1.2 and screen.key < 3 then
-        sound.shot:seek(0)
-        sound.shot:play()
+        sound.play(sound.shot)
         screen.key = 3
     end
 
+    if screen.time <= 1.3 and screen.key > 2 then
+        love.graphics.setColor(color.white)
+        love.graphics.draw(screen.sprites.noise)
+    end
+
     if screen.time >= 1.4 and screen.key < 4 then
-        sound.last:seek(0)
-        sound.last:play()
+        sound.play(sound.last)
         screen.key = 4
     end
 
+    if screen.time <= 1.5 and screen.key > 3 then
+        love.graphics.setColor(color.white)
+        love.graphics.draw(screen.sprites.noise)
+    end
+
     if screen.key > 1 then
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.draw(screen.blooddot)
+        color.reset()
+        love.graphics.draw(screen.sprites.blooddot)
     end
 
     if screen.key > 2 then
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.draw(screen.blood)
+        color.reset()
+        love.graphics.draw(screen.sprites.blood)
     end
 end
 
-function screen.setState(state)
+function screen.show(state)
 
     screen.state = state
     screen.time = 0

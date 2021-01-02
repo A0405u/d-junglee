@@ -8,71 +8,108 @@ end
 
 function game.setKey()
 
-    if game.key < 99 and pickups[4].picked == true then
+    if game.key < 99 and pickups[5].picked == true then
         game.key = 99
-        game.setState("end")
+        game.ending()
     end
 
-    if game.key < 1 and pickups[0].picked == true then
+    if game.key < 1 and pickups[1].picked == true then
         game.key = 1
         screen.tip.show = true
-        screen.tip.text = "Try to find out what happened"
+        screen.tip.text = "Попробуй выяснить что произошло"
     end
 end
 
-function game.setState(state)
+function game.info(header, text, choices)
 
-    if state == "map" then
-        screen.setState("map")
-    end
+    game.state = "info"
 
-    if state == "logo" then
-        screen.setState("logo")
-        sound.logo:seek(0)
-        sound.logo:play()
-        return
-    end
+    print(header)
 
-    if state == "title" then
-        screen.setState("title")
-        sound.day:stop()
-        sound.logo:stop()
-        sound.night:stop()
-        sound.intro:seek(0)
-        sound.intro:play()
-        return
-    end
+    screen.header = header
+    screen.text = text
+    choice.set(choices)
 
-    if state == "file" then
-        screen.setState("file")
-        sound.intro:stop()
-        sound.day:seek(0)
-        sound.day:play()
-        sound.start:seek(0)
-        sound.start:play()
-        return
-    end
+    screen.show("info")
+end
 
-    if state == "info" then
-        screen.setState("info")
-        screen.header = "Sunrise"
-        screen.text = "You woke up in open cave. You can see sandy beach and hear seaguls rumble.\n\nYou came across this cave yesterday, and fell asleep staring at the beautiful view.\n\nIt's time to get back."
-        return
-    end
+function game.terminal()
 
-    if state == "death" then
-        screen.setState("death")
-        sound.day:stop()
-        sound.night:stop()
-        sound.death:seek(0)
-        sound.death:play()
-        return
-    end
+    game.state = "terminal"
+    screen.show("terminal")
+    love.keyboard.setKeyRepeat(true)
+end
 
-    if state == "end" then
-        screen.setState("end")
-        sound.day:stop()
-        sound.night:stop()
-        sound.pickup:stop()
-    end
+
+function game.title()
+    game.state = "title"
+    screen.show("title")
+
+    sound.stop(sound.logo)
+    sound.stop(sound.day)
+    sound.stop(sound.night)
+    
+    sound.play(sound.intro)
+end
+
+
+function game.map()
+
+    game.state = "map"
+    screen.show("map")
+    love.keyboard.setKeyRepeat(false)
+end
+
+
+function game.file()
+
+    game.state = "file"
+    screen.show("file")
+end
+
+
+function game.font()
+
+    game.state = "font"
+    screen.show("font")
+end
+
+
+function game.map()
+
+    game.state = "map"
+    screen.show("map")
+end
+
+
+function game.logo()
+
+    game.state = "logo"
+    screen.show("logo")
+
+    sound.play(sound.logo)
+end
+
+
+function game.death()
+
+    game.state = "death"
+    screen.show("death")
+
+    sound.stop(sound.day)
+    sound.stop(sound.night)
+    sound.play(sound.death)
+end
+
+
+function game.ending()
+
+    game.state = "ending"
+
+    screen.tip.show = false
+    screen.show("ending")
+    
+    sound.stop(sound.day)
+    sound.stop(sound.night)
+    sound.stop(sound.pickup)
 end

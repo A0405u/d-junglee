@@ -1,7 +1,7 @@
 local pickup = {}
 
 
-function pickup:new(x, y, sx, sy, d, n, t)
+function pickup:new(x, y, sx, sy, d, n, t, c)
 
     self.__index = self
 
@@ -16,6 +16,7 @@ function pickup:new(x, y, sx, sy, d, n, t)
     
         name = n,
         text = t,
+        choices = c,
 
         picked = false
     }, self)
@@ -45,17 +46,18 @@ function pickup:update(dt)
     end
 end
 
-
-function pickup:pick()
+function pickup:hide()
     self.posx = screen.size.x
     self.posy = screen.size.y
+end
 
-    screen.header = self.name
-    screen.text = self.text
-    screen.setState("info")
+function pickup:pick()
 
-    sound.pickup:seek(0)
-    sound.pickup:play()
+    self:hide()
+
+    game.info(self.name, self.text, self.choices)
+
+    sound.play(sound.pickup)
 
     self.picked = true
 
