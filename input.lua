@@ -1,9 +1,5 @@
 input = {}
 
-function input.load()
-
-end
-
 function input.keypressed(pressed_key)
 
     if screen.state == "info" then
@@ -23,7 +19,7 @@ function input.keypressed(pressed_key)
     --   end
 
     if screen.state == "title" then
-        game.info()
+        game.info(text.header[1], text.info[1])
         sound.stop(sound.intro)
         sound.play(sound.start)
         return
@@ -93,6 +89,12 @@ function input.keypressed(pressed_key)
 
         if pressed_key == "space" then
             cycle.switch()
+            turn.next()
+            return
+        end
+
+        if pressed_key == "f" then
+            fog.switch()
             return
         end
         

@@ -5,6 +5,8 @@ function map.load(map_name)
     map.sprite = {
         day = love.graphics.newImage("sprites/"..map_name.."Day.png"),
         night = love.graphics.newImage("sprites/"..map_name.."Night.png"),
+        bgday = love.graphics.newImage("sprites/"..map_name.."BgDay.png"),
+        bgnight = love.graphics.newImage("sprites/"..map_name.."BgNight.png"),
     }
     map.mask = love.image.newImageData("sprites/"..map_name.."Mask.png")
     map.x = 127

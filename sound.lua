@@ -2,20 +2,28 @@ sound = {}
 
 function sound.load()
 
+    sound.enabled = false
+
     sound.menu = {
         pick = love.audio.newSource("sounds/pick.wav", "static"),
         select = love.audio.newSource("sounds/select.wav", "static"),
     }
 
     sound.player = {}
-    sound.player.step = {}
-    sound.player.step.ground = love.audio.newSource("sounds/playerstepground.wav", "static")
-    sound.player.step.forest = love.audio.newSource("sounds/playerstepforest.wav", "static")
-    sound.player.step.building = love.audio.newSource("sounds/playerstepbuilding.wav", "static")
-    sound.player.step.water = love.audio.newSource("sounds/playerstepwater.wav", "static")
+    sound.player.step = {
+        ground = love.audio.newSource("sounds/playerstepground.wav", "static"),
+        forest = love.audio.newSource("sounds/playerstepforest.wav", "static"),
+        building = love.audio.newSource("sounds/playerstepbuilding.wav", "static"),
+        water = love.audio.newSource("sounds/playerstepwater.wav", "static")
+    }
 
     sound.monster = {
         step = love.audio.newSource("sounds/enemystep.wav", "static")
+    }
+
+    sound.door = {
+        open = love.audio.newSource("sounds/dooropen.wav", "static"),
+        closed = love.audio.newSource("sounds/doorclosed.wav", "static")
     }
 
     sound.pickup = love.audio.newSource("sounds/pickup.wav", "static")
@@ -46,9 +54,11 @@ function sound.load()
 end
 
 function sound.play(sound)
-	sound:stop()
-	sound:seek(0)
-	sound:play()
+    if sound.enabled then
+        sound:stop()
+        sound:seek(0)
+        sound:play()
+    end
 end
 
 function sound.stop(sound)

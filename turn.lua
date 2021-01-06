@@ -11,6 +11,7 @@ function turn.next()
     turn.time = 0
 
     cycle.turn()
+    fog.new()
 
     for i = 1, #monsters do
         monsters[i]:addturn()

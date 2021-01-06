@@ -1,7 +1,7 @@
 game = {}
 
 function game.load()
-
+    
     game.state = "intro"
     game.key = 0
 end

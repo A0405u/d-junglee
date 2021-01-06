@@ -14,10 +14,11 @@ function player.load()
 
 	player.queue = {}
 
-	player.sprite = love.graphics.newImage("sprites/Player.png")
 	player.portrait = love.graphics.newImage("sprites/portrait.png")
 
 	player.nextturn = 0
+
+	player.range = 32
 
 	player.sound = {
 		step = sound.player.step.ground
@@ -104,12 +105,14 @@ end
 function player.draw()
 
 	if time % 0.5 > 0.25 then
-		love.graphics.setColor(116/255, 78/255, 0)
+		love.graphics.setColor(rgb(116, 78, 0))
+		love.graphics.points(player.posx + 0.5, player.posy + 0.5)
 	else
-		love.graphics.setColor(255/255, 171/255, 0)
+		love.graphics.setColor(color.yellow)
+		love.graphics.setBlendMode("add")
+		love.graphics.draw(sprite.dot, player.posx - 7, player.posy - 7)
+		love.graphics.setBlendMode("alpha")
 	end
-	love.graphics.points(player.posx + 0.5, player.posy + 0.5)
-
 end
 
 
@@ -193,6 +196,17 @@ function player.check(posx, posy)
 
 	if p == "wall" then
 		return nil
+	end
+
+	if p == "door" then
+
+		for i, d in ipairs(doors) do
+			if d.x == posx and d.y == posy then
+				if not d:try() then
+					return false
+				end
+			end
+		end
 	end
 
 	return p

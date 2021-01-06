@@ -1,6 +1,12 @@
 
 screen = {}
 
+SCREENSIZEX = 128;
+SCREENSIZEY = 128;
+SCREENSCALE = 4;
+
+FILTERMODE = "nearest";
+
 function screen.load()
 
     screen.size = { x = SCREENSIZEX, y = SCREENSIZEY }
@@ -18,25 +24,9 @@ function screen.load()
 
     screen.canvas = love.graphics.newCanvas(SCREENSIZEX, SCREENSIZEY)
 
-    screen.sprites = {}
-
-    screen.sprites.logo = love.graphics.newImage("sprites/logo.png")
-    screen.sprites.title = love.graphics.newImage("sprites/title.png")
-    screen.sprites.file = love.graphics.newImage("sprites/file.png")
-
-    screen.sprites.blood = love.graphics.newImage("sprites/blood.png")
-    screen.sprites.blooddot = love.graphics.newImage("sprites/blooddot.png")
-    screen.sprites.noise = love.graphics.newImage("sprites/noise.png")
-    screen.sprites.ghost = love.graphics.newImage("sprites/ghost.png")
-    screen.sprites.off = {
-        [0] = love.graphics.newImage("sprites/off000.png"),
-        [1] = love.graphics.newImage("sprites/off001.png")
-    }
-
     screen.tip = {
         show = true,
         help = true,
-        helpsprite = love.graphics.newImage("sprites/tiphelp.png"),
         text = "Вернитесь в лабо-\nраторию, сектор F5"
     }
 
@@ -107,7 +97,7 @@ end
 -- Logo
 function screen.logo()
 
-    love.graphics.draw(screen.sprites.logo)
+    love.graphics.draw(sprite.screen.logo)
 end
 
 
@@ -115,7 +105,7 @@ end
 function screen.title()
 
     color.reset()
-    love.graphics.draw(screen.sprites.title)
+    love.graphics.draw(sprite.screen.title)
     if screen.time % 2 > 1 then
         love.graphics.setColor(color.white)
         love.graphics.printf("Нажми START", 0, 89, 128, "center")
@@ -130,7 +120,6 @@ function screen.drawtip()
 
     color.reset()
     if screen.tip.help == true then
-        --love.graphics.draw(screen.tip.helpsprite)
         love.graphics.printf({color.light, "Скрыть - TAB"}, font.small, 26, 62, 75, "center")
     end
     love.graphics.printf({color.white, screen.tip.text}, font.small, 26, 42, 75, "center")
@@ -144,7 +133,6 @@ function screen.map()
     -- map.drawframe()
 
     map.draw()
-    clock.draw()
     player.draw()
     for i = 1, #monsters do
         monsters[i]:draw(dt)
@@ -153,16 +141,20 @@ function screen.map()
         pickups[i]:draw(dt)
     end
 
+    fog.draw()
+    clock.draw()
+
     if screen.tip.show == true then
         screen.drawtip()
     end
+
     -- sight.draw();
 end
 
 
 function screen.file()
 
-    love.graphics.draw(screen.sprites.file)
+    love.graphics.draw(sprite.screen.file)
     love.graphics.draw(player.portrait, 8, 8)
     
     love.graphics.printf({color.white, "Антон\nЛисицин"}, 48, 8, 72)
@@ -214,11 +206,11 @@ function screen.ending()
     if screen.key < 4 then
         screen.map()
     else
-        love.graphics.draw(screen.sprites.ghost)
+        love.graphics.draw(sprite.screen.ghost)
         if screen.time <=1.45 then
-            love.graphics.draw(screen.sprites.off[0])
+            love.graphics.draw(sprite.screen.off[1])
         elseif screen.time <=1.6 then
-            love.graphics.draw(screen.sprites.off[1])
+            love.graphics.draw(sprite.screen.off[2])
         end
     end
 
@@ -230,7 +222,7 @@ function screen.ending()
 
     if screen.time <= 0.1 and screen.key < 2 then
         love.graphics.setColor(color.white)
-        love.graphics.draw(screen.sprites.noise)
+        love.graphics.draw(sprite.screen.noise)
     end
 
     if screen.time >= 0.6 and screen.key < 2 then
@@ -240,7 +232,7 @@ function screen.ending()
 
     if screen.time <= 0.7 and screen.key > 1 then
         love.graphics.setColor(color.white)
-        love.graphics.draw(screen.sprites.noise)
+        love.graphics.draw(sprite.screen.noise)
     end
 
     if screen.time >= 1.2 and screen.key < 3 then
@@ -250,7 +242,7 @@ function screen.ending()
 
     if screen.time <= 1.3 and screen.key > 2 then
         love.graphics.setColor(color.white)
-        love.graphics.draw(screen.sprites.noise)
+        love.graphics.draw(sprite.screen.noise)
     end
 
     if screen.time >= 1.4 and screen.key < 4 then
@@ -260,17 +252,17 @@ function screen.ending()
 
     if screen.time <= 1.5 and screen.key > 3 then
         love.graphics.setColor(color.white)
-        love.graphics.draw(screen.sprites.noise)
+        love.graphics.draw(sprite.screen.noise)
     end
 
     if screen.key > 1 then
         color.reset()
-        love.graphics.draw(screen.sprites.blooddot)
+        love.graphics.draw(sprite.screen.blood[1])
     end
 
     if screen.key > 2 then
         color.reset()
-        love.graphics.draw(screen.sprites.blood)
+        love.graphics.draw(sprite.screen.blood[2])
     end
 end
 

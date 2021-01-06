@@ -5,7 +5,11 @@ color.light = {177/255, 177/255, 177/255, 1}
 color.dark = {91/255, 91/255, 91/255, 1}
 color.black = {21/255, 21/255, 21/255, 1}
 color.red = {1, 0, 0, 1}
-color.blue = {0, 0, 1, 1}
+color.blue = {0, 172/255, 1, 1}
+color.purple = {135/255, 0, 1, 1}
+color.yellow = {1, 171/255, 0, 1}
+color.transparent = {0, 0, 0, 0}
+color.null = {1, 1, 1, 1}
 
 function color.theme(name)
 
@@ -101,10 +105,17 @@ function hex(value, a)
     return {r/255, g/255, b/255, a}
 end
 
-function rgba (r, g, b, a)
+function rgb(r, g, b)
+    r = r or 255
+    g = g or 255
+    b = b or 255
+    return {r/255, g/255, b/255}
+end
+
+function rgba(r, g, b, a)
     r = r or 255
     g = g or 255
     b = b or 255
     a = a or 1
     return {r/255, g/255, b/255, a}
-    end
+end

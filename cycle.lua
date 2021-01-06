@@ -9,7 +9,7 @@ function cycle.load()
 end
 
 function cycle.turn()
-    cycle.time = cycle.time + 1
+    -- cycle.time = cycle.time + 1
     if cycle.time >= cycle.len then
         cycle.switch()
     end
@@ -20,11 +20,13 @@ function cycle.switch()
     if cycle.state == "day" then
         cycle.state = "night"
         cycle.len = cycle.night
+        player.range = player.range / 2
         --sound.stop(sound.day)
         --sound.play(sound.night)
     else
         cycle.state = "day"
         cycle.len = cycle.day
+        player.range = player.range * 2
         --sound.stop(sound.night)
         --sound.play(sound.day)
     end

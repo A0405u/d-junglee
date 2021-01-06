@@ -1,6 +1,6 @@
 local monster = {}
 
-function monster:new(x, y, sz, sp, rt, cl)
+function monster:new(x, y, sz, sp, rng, rt, cl)
 
     self.__index = self
 
@@ -14,15 +14,17 @@ function monster:new(x, y, sz, sp, rt, cl)
 		velx = 0,
 		vely = 0,
     
-        size = sz,
-		speed = sp,
+        size = sz or 1,
+		speed = sp or 1,
 
-		turncount = 0,
-		delay = 0,
+		range = rng or 16,
 
 		returning = rt,
 
 		color = cl or {1, 0, 0},
+
+		turncount = 0,
+		delay = 0,
 
 		smult = 1, -- speed multiplier
 
@@ -57,10 +59,18 @@ function monster:draw()
 	if cycle.state == "night" then
 		if time % 0.5 > 0.25 then
 			love.graphics.setColor(color.black)
+			love.graphics.points(self.posx + 0.5, self.posy + 0.5)
 		else
 			love.graphics.setColor(self.color)
+			love.graphics.setBlendMode("add")
+			love.graphics.draw(sprite.dot, self.posx - 7, self.posy - 7)
+			love.graphics.setBlendMode("alpha")
 		end
-		love.graphics.points(self.posx + 0.5, self.posy + 0.5)
+
+		-- love.graphics.setColor(self.color)
+		-- love.graphics.setBlendMode("add")
+		-- love.graphics.circle("line", self.posx, self.posy, self.range)
+		-- love.graphics.setBlendMode("alpha")
 
 --		self:drawpath()
 	end
@@ -120,15 +130,28 @@ function monster:checkwall()
 end
 
 
+function monster:distance(posx, posy)
+
+	local xdif = self.posx - posx
+	local ydif = self.posy - posy
+
+	return math.sqrt(xdif * xdif + ydif * ydif)
+end
+
+
 function monster:getpath()
 
-	local temp = path.get(self.posx, self.posy, player.posx, player.posy) -- Поиск пути к игроку
+	local temp = nil -- Переменная для хранения пути
 
-	if self.returning and not temp then -- Если пути к игроку нет, уходим на начальную позицию
-		temp = path.get(self.posx, self.posy, self.initx, self.inity)  -- Поиск пути к начальной позиции
+	if self:distance(player.posx, player.posy) <= self.range then -- Если игрок находится в радиусе обнаружения
+		temp = path.get(self.posx, self.posy, player.posx, player.posy) -- Поиск пути к игроку
+	end
+	
+	if self.returning and not temp then -- Если монстр возвращается и пути к игроку нет или он далеко
+		temp = path.get(self.posx, self.posy, self.initx, self.inity)  -- он уходит на начальную позицию
 	end
 
-	if not temp then return end -- Если и пути назад не нашлось, ничего не делаем
+	if not temp then return end -- Если и пути назад не нашлось, не ищем новый путь, а двигаемся по старому
 
 	self.path.nodes = {}
 
@@ -160,21 +183,9 @@ function monster:follow()
 
 		local current = table.remove(self.path.nodes, 1)
 
-		if current[1] > self.posx then
-			self:setvel(1, self.vely)
-		elseif current[1] < self.posx then
-			self:setvel(-1, self.vely)
-		else
-			self:setvel(0, self.vely)
-		end
+		self:setvel(current[1] - self.posx, self.vely)
 
-		if current[2] > self.posy then
-			self:setvel(self.velx, 1)
-		elseif	current[2] < self.posy then
-			self:setvel(self.velx, -1)
-		else
-			self:setvel(self.velx, 0)
-		end
+		self:setvel(self.velx, current[2] - self.posy)
 	end
 end
 
